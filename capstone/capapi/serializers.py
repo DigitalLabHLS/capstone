@@ -9,7 +9,8 @@ from .resources import email
 logger = logging.getLogger(__name__)
 
 
-class CaseSerializer(serializers.HyperlinkedModelSerializer):
+class CaseSerializer(serializers.ModelSerializer):
+    jurisdiction = serializers.ReadOnlyField(source='jurisdiction.slug')
     jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
     jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
     court_name = serializers.ReadOnlyField(source='court.name')
@@ -18,30 +19,23 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     reporter_id = serializers.ReadOnlyField(source='reporter.id')
     reporter_abbreviation = serializers.ReadOnlyField(source='reporter.name_abbreviation')
     citation = serializers.ReadOnlyField(source='citation.cite')
+    citation_slug = serializers.ReadOnlyField(source='citation.slug')
 
     class Meta:
         model = models.CaseMetadata
-        lookup_field = 'case_id'
-        fields = ('case_id', 'url',
-                  'name', 'name_abbreviation',
-                  'citation',
-                  'first_page', 'last_page',
-                  'jurisdiction', 'jurisdiction_name', 'jurisdiction_id',
-                  'docket_number',
-                  'decision_date_original',
-                  'court', 'court_name', 'court_id',
-                  'reporter', 'reporter_name', 'reporter_id',
-                  'reporter_abbreviation',
-                  'volume')
-        extra_kwargs = {
-            'url': {'lookup_field': 'case_id'}
-        }
+        fields = '__all__'
+
+
+class CitationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Citation
+        fields = ('slug', 'type', 'cite')
 
 
 class JurisdictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Jurisdiction
-        fields = ('id', 'slug', 'name', 'name_abbreviation', )
+        fields = '__all__'
 
 
 class VolumeSerializer(serializers.ModelSerializer):

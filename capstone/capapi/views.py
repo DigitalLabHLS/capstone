@@ -46,6 +46,16 @@ class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
     http_method_names = ['get']
     queryset = models.Court.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+    ordering = ('-id',)
+
+
+class CitationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = serializers.CitationSerializer
+    http_method_names = ['get']
+    queryset = models.Citation.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+    lookup_field = 'slug'
+    ordering = ('-id',)
 
 
 class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
@@ -57,10 +67,10 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     http_method_names = ['get']
     queryset = models.CaseMetadata.objects.all()
     filter_backends = (rs_filters.SearchFilter, DjangoFilterBackend,)
-    search_fields = ('name', 'name_abbreviation', 'court__name', 'reporter__name', 'jurisdiction__name')
+    search_fields = ('name', 'citation__slug', 'name_abbreviation', 'court__name', 'reporter__name', 'jurisdiction__name')
     filter_class = filters.CaseFilter
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
-    lookup_field = 'case_id'
+    lookup_field = 'citation__slug'
     ordering = ('decisiondate',)
 
     def list(self, *args, **kwargs):

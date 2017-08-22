@@ -10,6 +10,7 @@ router.register(r'jurisdictions', views.JurisdictionViewSet)
 router.register(r'courts', views.CourtViewSet)
 router.register(r'volumes', views.VolumeViewSet)
 router.register(r'reporters', views.ReporterViewSet)
+router.register(r'citations', views.CitationViewSet)
 
 user_router = routers.DefaultRouter()
 user_router.register(r'accounts', views.UserViewSet)

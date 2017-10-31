@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from capdb import models
 from .models import APIUser
-from .resources import email
+from .resources import email, extract_casebody
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +15,23 @@ class CitationSerializer(serializers.ModelSerializer):
         fields = ('url', 'type', 'cite')
 
 
+class CaseXMLSerializer(serializers.ModelSerializer):
+    casebody = serializers.SerializerMethodField(source='get_casebody')
+    case_id = serializers.CharField()
+    
+    class Meta:
+        model = models.CaseXML
+        fields = ('casebody', 'case_id')
+
+    def get_casebody(self, data):
+        print("getting case body")
+        # import ipdb; ipdb.set_trace()
+        case = models.CaseXML.objects.get(case_id=data.get('case_id'))
+        return extract_casebody(case.orig_xml)
+
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name="casemetadata-detail", lookup_field='slug')
+    url = serializers.HyperlinkedIdentityField(
+        view_name="casemetadata-detail", lookup_field='slug')
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
     court = serializers.ReadOnlyField(source='court.name')
     court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True)
@@ -46,6 +61,12 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'volume',
             'volume_url',
         )
+
+
+class AuthenticatedCaseSerializer(CaseSerializer):
+    class Meta(CaseSerializer.Meta):
+        fields = CaseSerializer.Meta.fields + ('casebody',)
+
 
 
 class JurisdictionSerializer(serializers.ModelSerializer):
@@ -127,6 +148,7 @@ class UserSerializer(serializers.ModelSerializer):
         return found_user
 
     def verify_case_allowance(self, user, case_count):
+        print("verify_case_allowance")
         if case_count <= 0:
             return user
         user.update_case_allowance()

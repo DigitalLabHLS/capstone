@@ -95,11 +95,9 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         blacklisted_case_count = len(list((case for case in cases if not case.jurisdiction.whitelisted)))
 
-        user_serializer = serializers.UserSerializer()
-
         try:
             # check user's case allowance against blacklisted
-            user = user_serializer.verify_case_allowance(self.request.user, blacklisted_case_count)
+            user = serializers.UserSerializer().verify_case_allowance(self.request.user, blacklisted_case_count)
         except ValidationError as err:
             return JsonResponse(err.detail, status=403)
 

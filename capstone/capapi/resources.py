@@ -7,7 +7,8 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.defaultfilters import slugify
 
-from capdb.models import CaseXML
+from scripts.helpers import parse_xml
+from capdb.models import CaseXML, Jurisdiction, CaseMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 def get_matching_case_xml(case_id):
     try:
         xml = CaseXML.objects.get(case_id=case_id)
+        # TODO: parse XML here
         return xml.orig_xml
     except CaseXML.DoesNotExist:
         logger.error("Case id mismatch", case_id)
@@ -69,3 +71,37 @@ def email(reason, user):
             [user.email],
             fail_silently=False, )
         logger.info("sent new_signup email for %s" % user.email)
+
+
+def extract_casebody(case_xml):
+    # strip soft hyphens from line endings
+    text = case_xml.replace(u'\xad', '')
+    case = parse_xml(text)
+
+    # strip labels from footnotes:
+    for footnote in case('casebody|footnote'):
+        label = footnote.attrib.get('label')
+        if label and footnote[0].text.startswith(label):
+            footnote[0].text = footnote[0].text[len(label):]
+
+    return case('casebody|casebody').html()
+
+
+def jsonify_case(case_id):
+    case_xml = get_matching_case_xml(case_id)
+    case_metadata = CaseMetadata.objects.get(case_id=case_id)
+    casebody = extract_casebody(case_xml)
+
+    return {
+        'slug': case_metadata.slug,
+        '':'',
+        'casebody': casebody
+    }
+
+#
+# """       <court abbreviation="Mass." jurisdiction="Massachusetts">Massachusetts Supreme Judicial Court</court>
+#           <name abbreviation="Opinion of the Justices to the Senate &amp; House of Representatives">Opinion of the Justices to the Senate and House of Representatives</name>
+#           <docketnumber/>
+#           <citation category="official" type="bluebook">126 Mass. 557</citation>
+#           <decisiondate>1781-02-22</decisiondate>
+# """

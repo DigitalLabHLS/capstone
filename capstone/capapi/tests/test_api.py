@@ -1,3 +1,4 @@
+import os
 import pytest
 from django.conf import settings
 
@@ -43,7 +44,7 @@ def test_case(client, api_url, case):
 @pytest.mark.django_db(transaction=True)
 def test_single_case_download(auth_user, api_url, auth_client, case):
     assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
-    url = "%scases/%s/?type=download" % (api_url, case.slug)
+    url = os.path.join(api_url, "cases", case.slug, "?type=download")
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, format='')
 
@@ -65,7 +66,7 @@ def test_many_case_download(auth_user, api_url, auth_client):
         setup_case(**{'docket_number': '123'})
 
     assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
-    url = "%scases/?docket_number=123&type=download" % api_url
+    url = os.path.join(api_url, "cases/?docket_number=123&type=download")
 
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, format='')

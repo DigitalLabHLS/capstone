@@ -30,6 +30,7 @@ def auth_user():
 def case():
     return factories.setup_case()
 
+
 @pytest.fixture
 def court():
     return factories.setup_court()

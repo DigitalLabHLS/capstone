@@ -23,6 +23,7 @@ from .factories import *
 @pytest.fixture(scope='session')
 def django_db_setup(django_db_setup, django_db_blocker, redis_proc):
     with django_db_blocker.unblock():
+        print("django_db_blocker.unblock")
 
         # set up postgres functions and triggers
         fabfile.update_postgres_env()
@@ -110,10 +111,6 @@ def unaltered_alto_xml():
 
 
 ### Django json fixtures ###
-
-@pytest.fixture
-def load_user_data():
-    call_command('loaddata', 'test_data/user_data.json')
 
 @pytest.fixture
 def load_tracking_tool_database():

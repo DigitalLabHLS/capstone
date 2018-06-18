@@ -52,6 +52,7 @@ the `capstone` virtualenv activated.
 Set up a postgres database:
 
     (capstone)$ psql -c "CREATE DATABASE capstone;"
+    (capstone)$ psql -c "CREATE DATABASE capapi;"
     (capstone)$ fab init_db  # one time -- set up database tables and development Django admin user, migrate databases
     (capstone)$ fab load_test_data  # load in our test data
 
@@ -66,6 +67,7 @@ We have initial support for local development via `docker compose`. Docker setup
 
     $ docker-compose up &
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capstone;"
+    $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capapi;"
     $ docker-compose exec web fab init_db
     $ docker-compose exec web fab load_test_data
     

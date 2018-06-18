@@ -89,7 +89,7 @@ class CaseAllowanceMixin:
             # logged out users won't get any blacklisted case bodies, so nothing to update
             return super().data
 
-        with transaction.atomic():
+        with transaction.atomic(using='capapi'):
             # for logged-in users, fetch the current user data here inside a transaction, using select_for_update
             # to lock the row so we don't collide with any simultaneous requests
             user = request.user.__class__.objects.select_for_update().get(pk=request.user.pk)
